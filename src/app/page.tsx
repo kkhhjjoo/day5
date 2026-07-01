@@ -1,66 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import * as m from 'motion/react-m';
-import { AnimatePresence } from 'motion/react';
+import { useEffect, useState } from "react";
+import * as m from 'motion/react-m'
 
-export const WordChangeAnimation = ({
-  prefix,
-  suffix,
-  words,
-  interval = 2000,
+export const TypingEffect = ({
+  text,
+  typingSpeed = 150,
 }: {
-  prefix: string;
-  suffix: string;
-  words: string[];
-  interval?: number;
+  text: string;
+  typingSpeed?: number;
 }) => {
+  // 현재 입력된 텍스트
+  const [displayText, setDisplayText] = useState("");
+  // 현재 입력된 텍스트의 인덱스
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      // currentIndex를 현재 단어 개수로 나눈 나머지를 구함
-      // 단어가 4개라면 0, 1, 2, 3, 0, 1, 2, 3, ...
-      setCurrentIndex((prev) => (prev + 1) % words.length);
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [words, interval]);
+  useEffect(() => { 
+    let timer: NodeJS.Timeout | undefined;
+    if (currentIndex < text.length) { 
+      timer = setTimeout(() => {
+        setDisplayText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1)
+      }, typingSpeed);
+    }
+    //클린업 함수 언제 실행?
+    //1. 컴포넌트 언마운트 되기 진전 => 컴포넌트가 사라지기 직전에 정리하고 떠난다.
+    //2. useEffect가 재실행되기 전
+    return () => clearTimeout(timer)
+  }, [currentIndex, text, typingSpeed])
 
   return (
-    <div className="flex h-12 items-center overflow-hidden text-2xl">
-      <span>{prefix}</span>
-      <div className="relative mx-2 inline-block w-12 overflow-hidden">
-        <AnimatePresence mode="popLayout">
-          <m.span
-            key={currentIndex}
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -50, opacity: 0 }}
-            transition={{duration: 0.5}}
-            className="inline-block font-bold text-blue-600">
-            {`${words[currentIndex]}`}
-          </m.span>
-        </AnimatePresence>
-      </div>
-      <span>{suffix}</span>
+    <div className="font-mono text-2xl">
+      {/* 현재 입력된 텍스트 */}
+      {displayText}
+      {/* 깜빡거리는 타이핑 커서 */}
+      <m.span
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{repeat: Infinity, duration: 0.8}}
+        className="ml-1 inline-block h-5 w-2 bg-black" />
     </div>
   );
 };
 
 // 사용 예시
-export default function WordChangeExample() {
-  // 단어 목록
-  const words = ["러닝", "게임", "볼링", "요가", "독서"];
-
+export default function TypingEffectExample() {
   return (
     <div className="p-8">
-      <WordChangeAnimation
-        prefix="오늘은"
-        suffix="어떤가요?"
-        words={words}
-        interval={2000}
-      />
+      <TypingEffect text="오늘은 러닝 어떤가요?" typingSpeed={100} />
     </div>
   );
 }
