@@ -1,65 +1,66 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import * as m from 'motion/react-m';
+import { AnimatePresence } from 'motion/react';
+
+export const WordChangeAnimation = ({
+  prefix,
+  suffix,
+  words,
+  interval = 2000,
+}: {
+  prefix: string;
+  suffix: string;
+  words: string[];
+  interval?: number;
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // currentIndex를 현재 단어 개수로 나눈 나머지를 구함
+      // 단어가 4개라면 0, 1, 2, 3, 0, 1, 2, 3, ...
+      setCurrentIndex((prev) => (prev + 1) % words.length);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [words, interval]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex h-12 items-center overflow-hidden text-2xl">
+      <span>{prefix}</span>
+      <div className="relative mx-2 inline-block w-12 overflow-hidden">
+        <AnimatePresence mode="popLayout">
+          <m.span
+            key={currentIndex}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -50, opacity: 0 }}
+            transition={{duration: 0.5}}
+            className="inline-block font-bold text-blue-600">
+            {`${words[currentIndex]}`}
+          </m.span>
+        </AnimatePresence>
+      </div>
+      <span>{suffix}</span>
+    </div>
+  );
+};
+
+// 사용 예시
+export default function WordChangeExample() {
+  // 단어 목록
+  const words = ["러닝", "게임", "볼링", "요가", "독서"];
+
+  return (
+    <div className="p-8">
+      <WordChangeAnimation
+        prefix="오늘은"
+        suffix="어떤가요?"
+        words={words}
+        interval={2000}
+      />
     </div>
   );
 }
